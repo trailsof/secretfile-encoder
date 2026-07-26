@@ -71,22 +71,27 @@ def read_ciphertext_file(ciphertext_file_path: str) -> tuple[int, str]:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Encrypt and decrypt a message with a key file.")
-    parser.add_argument("message", help="Plaintext message to encrypt")
-    parser.add_argument("--ciphertext-file", help="Optional file path to write the ciphertext hex to")
+    parser.add_argument("message", nargs="?", help="Plaintext message to encrypt")
+    parser.add_argument("-o", "--ciphertext-file", help="Optional file path to write the ciphertext hex to")
+    parser.add_argument("-d", "--decrypt-file", help="Path to a ciphertext file to decrypt")
     args = parser.parse_args()
 
+    if bool(args.message) == bool(args.decrypt_file):
+        parser.error("provide either a message to encrypt or --decrypt-file, but not both")
+    if args.decrypt_file and args.ciphertext_file:
+        parser.error("--ciphertext-file can only be used when encrypting a message")
+
     try:
-        encrypted_hex = encrypt_message(args.message, str(DEFAULT_KEY_PATH), DEFAULT_START_LINE)
-        print(f"Ciphertext: {encrypted_hex}")
-
-        if args.ciphertext_file:
-            write_ciphertext_file(args.ciphertext_file, DEFAULT_START_LINE, encrypted_hex)
-            print(f"Ciphertext saved to: {args.ciphertext_file}")
-            start_line, saved_ciphertext_hex = read_ciphertext_file(args.ciphertext_file)
-            decrypted_text = decrypt_message(saved_ciphertext_hex, str(DEFAULT_KEY_PATH), start_line)
+        if args.decrypt_file:
+            start_line, ciphertext_hex = read_ciphertext_file(args.decrypt_file)
+            decrypted_text = decrypt_message(ciphertext_hex, str(DEFAULT_KEY_PATH), start_line)
+            print(f"Decrypted: {decrypted_text}")
         else:
-            decrypted_text = decrypt_message(encrypted_hex, str(DEFAULT_KEY_PATH), DEFAULT_START_LINE)
+            encrypted_hex = encrypt_message(args.message, str(DEFAULT_KEY_PATH), DEFAULT_START_LINE)
+            print(f"Ciphertext: {encrypted_hex}")
 
-        print(f"Decrypted: {decrypted_text}")
+            if args.ciphertext_file:
+                write_ciphertext_file(args.ciphertext_file, DEFAULT_START_LINE, encrypted_hex)
+                print(f"Ciphertext saved to: {args.ciphertext_file}")
     except FileNotFoundError:
         print(f"Please make sure the default key file exists at: {DEFAULT_KEY_PATH}")
