@@ -22,7 +22,7 @@ def process_otp(input_data: bytes, key_bytes: bytes) -> bytes:
     return bytes(result)
 
 def read_key_line(key_file_path: str, line_number: int) -> bytes:
-    """Reads one 100-byte key line, excluding its newline."""
+    """Decodes one 200-character hex line into 100 key bytes."""
     if line_number < 1:
         raise ValueError("Key line number must be 1 or greater.")
 
@@ -32,12 +32,23 @@ def read_key_line(key_file_path: str, line_number: int) -> bytes:
     if line_number > len(key_lines):
         raise ValueError(f"Key file has no line {line_number}.")
 
-    key_bytes = key_lines[line_number - 1].rstrip(b"\r\n")
-    if len(key_bytes) != BLOCK_SIZE:
+    key_hex = key_lines[line_number - 1].rstrip(b"\r\n")
+    expected_hex_length = BLOCK_SIZE * 2
+    if len(key_hex) != expected_hex_length:
         raise ValueError(
-            f"Key line {line_number} must contain exactly {BLOCK_SIZE} bytes; "
-            f"found {len(key_bytes)}."
+            f"Key line {line_number} must contain exactly {expected_hex_length} "
+            f"hex characters for {BLOCK_SIZE} bytes; found {len(key_hex)} characters."
         )
+
+    try:
+        key_bytes = bytes.fromhex(key_hex.decode("ascii"))
+    except (UnicodeDecodeError, ValueError) as error:
+        raise ValueError(
+            f"Key line {line_number} must contain only hexadecimal characters (0-9, a-f)."
+        ) from error
+
+    if len(key_bytes) != BLOCK_SIZE:
+        raise ValueError(f"Key line {line_number} did not decode to {BLOCK_SIZE} bytes.")
 
     return key_bytes
 

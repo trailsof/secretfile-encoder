@@ -4,7 +4,7 @@ Small Python script that encrypts and decrypts fixed-size, 100-byte messages wit
 
 ## How to use
 
-Make sure the key file exists at `example/key.txt`. Each usable line must contain exactly 100 bytes. Line 1 is reserved for a header.
+Make sure the key file exists at `example/key.txt`. Each usable line must contain exactly 200 hexadecimal characters, representing 100 key bytes. Line 1 is reserved for a header.
 
 ### Encrypt a message
 
@@ -24,7 +24,7 @@ The script automatically tracks the next unused key line in `example/next_line.t
 
 - Pads each message to a fixed 100-byte block.
 - Stores the real UTF-8 message length inside the encrypted block.
-- Uses one complete 100-byte key line per message.
+- Decodes one 200-character hex key line into 100 key bytes per message.
 - Advances `example/next_line.txt` so that key lines are not reused.
 - Saves the ciphertext with the key line number in its header.
 - Decrypts using the key line stored in the ciphertext header.
@@ -32,6 +32,7 @@ The script automatically tracks the next unused key line in `example/next_line.t
 ## Notes
 
 - The default key file is `example/key.txt`.
+- Two hex characters represent one byte, so every usable key line must contain exactly 200 hex characters.
 - Messages may contain at most 98 UTF-8 bytes; emoji and some other characters use multiple bytes.
 - `-o` is required when encrypting so the ciphertext and its key-line header are saved together.
 - Use `-d` to decrypt a previously created ciphertext file.
