@@ -1,4 +1,4 @@
-# encode_msg.py
+# secretfile_encoder.py
 
 Small Python script that encrypts and decrypts a message with a one-time-pad style XOR using a key file.
 
@@ -8,7 +8,7 @@ Small Python script that encrypts and decrypts a message with a one-time-pad sty
 2. Run:
 
 ```bash
-python3 encode_msg.py "hello" --ciphertext-file ciphertext.txt
+python3 secretfile_encoder.py "hello" --ciphertext-file ciphertext.txt
 ```
 
 ## What it does
